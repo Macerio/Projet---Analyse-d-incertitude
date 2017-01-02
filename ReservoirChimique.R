@@ -10,7 +10,7 @@ library(sensitivity) #for morris
 
 ### Import data
 #chemin = '/Users/HUGO/Documents/Ecole/INSA/5GM/Incertitude/Projet'
-chemin = "~/GitHub/Projet - Analyse d'incertitude"
+chemin = "~/Google Drive/INSA/Analyse d'incertitude/Projet"
 jdd.1 = read.csv(paste(chemin,'/jdd_1.csv',sep=""),header= T )
 
 ### Look up and clean the data 
@@ -73,3 +73,9 @@ interaction = annova$coefficients[-1] # On enlève l'intercept
 interaction = interaction[which(interaction>10^-3)]
 barplot(sort(interaction, decreasing = T), las = 2)
 plot(annova)
+
+
+install.package("ggplot2")
+library("ggplot2")
+qplot(interaction, geom="bar", stat="identity")
+names(interaction)
