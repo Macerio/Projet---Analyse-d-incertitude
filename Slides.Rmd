@@ -1,0 +1,55 @@
+---
+title: "Analyse d'incertitude : Réactions chimiques liées au stockage du CO2"
+author: "Marie-Cécile RIOM & Hugo SECHIER"
+date: "2 janvier 2017"
+output: ioslides_presentation
+runtime: shiny
+---
+
+## Présentation du problème
+
+
+
+## Compréhension des données
+
+```{r, echo = FALSE}
+chemin = "~/Google Drive/INSA/Analyse d'incertitude/Projet"
+jdd.1 = read.csv(paste(chemin,'/jdd_1.csv',sep=""),header= T )
+
+summary(jdd.1)
+```
+
+## Compréhension des données
+```{r, echo = FALSE, warning=FALSE}
+X = jdd.1[,1:(length(jdd.1)-2)]
+for (i in 1:dim(X)[2]){
+  X[,i]=as.numeric(X[,i])
+}
+Y = jdd.1[,(length(jdd.1)-1):(length(jdd.1))]
+Y1 = data.frame(Y$X.wgt_calcite)
+Y2 = data.frame(Y$X.wgt_chlorite)
+X = scale(X)
+X = data.frame(X)
+data = data.frame(y= Y1,X)
+data_full = data.frame(y= Y,X)
+library(corrplot)
+cor <- cor(data_full)
+# Pour l'afficher dans une autre fenetre
+corrplot(cor, type="upper", order = "AOE", tl.col="black", tl.srt=55, tl.cex = 0.7)
+```
+
+## Algorithme de Morris pour la concentration de calcite
+
+```{r, echo = FALSE}
+chemin = "~/Google Drive/INSA/Analyse d'incertitude/Projet"
+jdd.1 = read.csv(paste(chemin,'/jdd_1.csv',sep=""),header= T )
+
+summary(jdd.1)
+```
+## Slide with R Code and Output
+
+```{r}
+summary(cars)
+```
+
+
