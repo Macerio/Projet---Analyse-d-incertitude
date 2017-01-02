@@ -92,12 +92,20 @@ RF =function(X){
   return(predict(model.RF,X.scaled))
 }
 
-model.morris = morris(RF,factors =colnames(X),design = list(type = "oat", levels = 10, grid.jump = 3), r = 10)
+model.morris = morris(RF,factors =colnames(X),design = list(type = "oat", levels = 10, grid.jump = 3), r = 20)
 
 #model.morris = morris(modeleRL,factors =colnames(X),design = list(type = "oat", levels = 5, grid.jump = 3), r = 4)
 #quartz()
 plot(model.morris)
 summary(model.morris)
+
+# Better plot
+mu <- apply(model.morris$ee, 2, mean)
+mu.star <- apply(model.morris$ee, 2, function(x) mean(abs(x)))
+sigma <- apply(model.morris$ee, 2, sd)
+
+plot(mu.star, sigma)
+
 #### ANNOVA
 # Pour connaitre les effets d'interactions : 
 annova = aov(data$Y.X.wgt_calcite~(.)^2,data=data)
