@@ -72,6 +72,7 @@ RL =function(X){
 }
 
 
+model.morris = morris(RL,factors =colnames(X),design = list(type = "oat", levels = 15, grid.jump = 5), r = 15)
 #model.morris = morris(modeleRL,factors =colnames(X),design = list(type = "oat", levels = 5, grid.jump = 3), r = 4)
 #quartz()
 plot(model.morris)
