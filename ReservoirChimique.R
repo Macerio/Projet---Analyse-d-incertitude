@@ -9,8 +9,6 @@
 # - Variabilité du Morris 
 
 ### Import package used
-install.packages('DiceKriging')
-install.packages('sensitivity')
 library(DiceKriging) #for km
 library(sensitivity) #for morris
 library(ggplot2)
@@ -95,25 +93,23 @@ RF =function(X){
 model.morris = morris(RF,factors =colnames(X),design = list(type = "oat", levels = 10, grid.jump = 3), r = 20)
 
 #model.morris = morris(modeleRL,factors =colnames(X),design = list(type = "oat", levels = 5, grid.jump = 3), r = 4)
-#quartz()
-plot(model.morris)
-summary(model.morris)
 
-<<<<<<< HEAD
-d=data.frame(x1=c(1,3,1,5,4), x2=c(2,4,3,6,6), y1=c(1,1,4,1,3), y2=c(2,2,5,3,5), t=c('a','a','a','b','b'), r=c(1,2,3,4,5))
-ggplot() + 
-  scale_x_continuous(name="x") + 
-  scale_y_continuous(name="y") +
-  geom_rect(data=d, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2, fill=t), color="black", alpha=0.5) +
-  geom_text(data=d, aes(x=x1+(x2-x1)/2, y=y1+(y2-y1)/2, label=r), size=4) 
-=======
 # Better plot
 mu <- apply(model.morris$ee, 2, mean)
 mu.star <- apply(model.morris$ee, 2, function(x) mean(abs(x)))
 sigma <- apply(model.morris$ee, 2, sd)
 
-plot(mu.star, sigma)
->>>>>>> origin/master
+#plot(mu.star, sigma)
+marice= data.frame(name = model.morris$factors,mu.star,sigma)
+d=data.frame(x1=c(0,0.003,0.002), x2=c(0.002,0.005,max(mu.star)+0.001), y1=c(0,0.001,0.008), y2=c(0.004,0.006,max(sigma)+0.001),
+             t =c('Non influents','Effets linéaires','Effets non linéaires ou interactions') , 
+             r=c(1,2,3))
+
+g <- ggplot(marice) +
+  geom_rect(data=d, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2, fill=t), color="black", alpha=0.5) +
+  geom_point(aes(x=mu.star, y=sigma,label = model.morris$factors),size=1) +
+  geom_text(aes(x=mu.star, y=sigma,label = model.morris$factors),size=3,hjust=1.1)
+g
 
 #### ANNOVA
 # Pour connaitre les effets d'interactions : 
@@ -136,3 +132,37 @@ library(corrplot)
 cor <- cor(data_full)
 quartz() # Pour l'afficher dans une autre fenetre
 corrplot(cor, type="upper", order = "AOE", tl.col="black", tl.srt=55, tl.cex = 0.7)
+
+
+
+#### R shiny
+server=function(input, output) {
+  
+  output$trendPlot <- renderPlot({
+    
+    model.morris = morris(RF,factors =colnames(X),design = list(type = "oat", levels = 10, grid.jump = 3), r = 20)
+    mu <- apply(model.morris$ee, 2, mean)
+    mu.star <- apply(model.morris$ee, 2, function(x) mean(abs(x)))
+    sigma <- apply(model.morris$ee, 2, sd)
+    marice= data.frame(name = model.morris$factors,mu.star,sigma)
+    d=data.frame(x1=c(0,0.003,0.002), x2=c(0.002,0.005,max(mu.star)+0.001), y1=c(0,0.001,0.008), y2=c(0.004,0.006,max(sigma)+0.001),
+                 t =c('Non influents','Effets linéaires','Effets non linéaires ou interactions') , 
+                 r=c(1,2,3))
+    
+    g <- ggplot(marice) +
+      geom_rect(data=d, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2, fill=t), color="black", alpha=0.5) +
+      geom_point(aes(x=mu.star, y=sigma,label = model.morris$factors),size=1) +
+      geom_text(aes(x=mu.star, y=sigma,label = model.morris$factors),size=3,hjust=1.1)
+    g
+  })
+}
+ui=fluidPage(
+  titlePanel("MORRIS"),
+  mainPanel(
+    plotOutput("trendPlot")
+  )
+)
+
+shinyApp(ui,server)
+    
+    
