@@ -72,11 +72,10 @@ RL =function(X){
 }
 
 
-model.morris = morris(RL,factors =colnames(X),design = list(type = "oat", levels = 10, grid.jump = 3), r = 4)
 #model.morris = morris(modeleRL,factors =colnames(X),design = list(type = "oat", levels = 5, grid.jump = 3), r = 4)
 #quartz()
 plot(model.morris)
-
+summary(model.morris)
 #### ANNOVA
 # Pour connaitre les effets d'interactions : 
 annova = aov(data$Y.X.wgt_calcite~(.)^2,data=data)
@@ -91,22 +90,10 @@ p <- p + geom_bar(stat="identity", fill="steelblue") +
   geom_text(aes(label=round(interaction$value,5)), hjust=1.6,color="white", size=3.5)
 p + coord_flip()
 
-<<<<<<< Updated upstream
-=======
-
-install.package("ggplot2")
-library("ggplot2")
-qplot(interaction, geom="bar", stat="identity")
-names(interaction)
-
-
-## Correlation between variables
-
-pairs(data[round(runif(100, min=1, max=10886), digits=0),-c(1,2,3,4,13)])
+#### Correlation between variables
+data_full = data.frame(y= Y,X)
 install.packages("corrplot")
 library(corrplot)
-cor <- cor(data[,c(6,7,8,9,14,15,16,17,12)])
-# quartz() # Pour l'afficher dans une autre fenetre
-corrplot(cor, type="upper", order="hclust", tl.col="black", tl.srt=45)
-
->>>>>>> Stashed changes
+cor <- cor(data_full)
+quartz() # Pour l'afficher dans une autre fenetre
+corrplot(cor, type="upper", order = "AOE", tl.col="black", tl.srt=55, tl.cex = 0.7)
