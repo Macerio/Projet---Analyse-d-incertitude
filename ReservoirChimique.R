@@ -92,19 +92,28 @@ RF =function(X){
   return(predict(model.RF,X.scaled))
 }
 
-model.morris = morris(RF,factors =colnames(X),design = list(type = "oat", levels = 10, grid.jump = 3), r = 10)
+model.morris = morris(RF,factors =colnames(X),design = list(type = "oat", levels = 10, grid.jump = 3), r = 20)
 
 #model.morris = morris(modeleRL,factors =colnames(X),design = list(type = "oat", levels = 5, grid.jump = 3), r = 4)
 #quartz()
 plot(model.morris)
 summary(model.morris)
 
+<<<<<<< HEAD
 d=data.frame(x1=c(1,3,1,5,4), x2=c(2,4,3,6,6), y1=c(1,1,4,1,3), y2=c(2,2,5,3,5), t=c('a','a','a','b','b'), r=c(1,2,3,4,5))
 ggplot() + 
   scale_x_continuous(name="x") + 
   scale_y_continuous(name="y") +
   geom_rect(data=d, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2, fill=t), color="black", alpha=0.5) +
   geom_text(data=d, aes(x=x1+(x2-x1)/2, y=y1+(y2-y1)/2, label=r), size=4) 
+=======
+# Better plot
+mu <- apply(model.morris$ee, 2, mean)
+mu.star <- apply(model.morris$ee, 2, function(x) mean(abs(x)))
+sigma <- apply(model.morris$ee, 2, sd)
+
+plot(mu.star, sigma)
+>>>>>>> origin/master
 
 #### ANNOVA
 # Pour connaitre les effets d'interactions : 
