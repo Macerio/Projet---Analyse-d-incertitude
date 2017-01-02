@@ -43,16 +43,6 @@ X = scale(X)
 X = data.frame(X)
 boxplot(X)
 data = data.frame(y= Y1,X)
-
-#### Correlation between variables
-data_full = data.frame(y= Y,X)
-install.packages("corrplot")
-library(corrplot)
-cor <- cor(data_full)
-quartz() # Pour l'afficher dans une autre fenetre
-corrplot(cor, type="upper", order = "AOE", tl.col="black", tl.srt=55, tl.cex = 0.7)
-
-
 ### Create models
 #### régression linéaire
 modeleRL <- lm(data$Y.X.wgt_calcite~.,data = data)
@@ -103,16 +93,6 @@ RF =function(X){
 model.morris = morris(RF,factors =colnames(X),design = list(type = "oat", levels = 10, grid.jump = 3), r = 20)
 
 #model.morris = morris(modeleRL,factors =colnames(X),design = list(type = "oat", levels = 5, grid.jump = 3), r = 4)
-#quartz()
-plot(model.morris)
-summary(model.morris)
-
-d=data.frame(x1=c(1,3,1,5,4), x2=c(2,4,3,6,6), y1=c(1,1,4,1,3), y2=c(2,2,5,3,5), t=c('a','a','a','b','b'), r=c(1,2,3,4,5))
-ggplot() + 
-  scale_x_continuous(name="x") + 
-  scale_y_continuous(name="y") +
-  geom_rect(data=d, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2, fill=t), color="black", alpha=0.5) +
-  geom_text(data=d, aes(x=x1+(x2-x1)/2, y=y1+(y2-y1)/2, label=r), size=4) 
 
 # Better plot
 mu <- apply(model.morris$ee, 2, mean)
@@ -138,32 +118,18 @@ g
 # - K2diss and Kine illite. 
 
 #### ANNOVA
-# To identify the different interaction between variables and the important variable for the output Y1 : 
+# Pour connaitre les effets d'interactions : 
 annova = aov(data$Y.X.wgt_calcite~(.)^2,data=data)
 interaction = annova$coefficients[-1] # On enlève l'intercept
+interaction = interaction[which(interaction>10^-3)]
 #plot(annova)
 interaction = data.frame(Mixing = names(interaction),value = interaction)
 interaction = interaction[order(interaction[,2], decreasing = T),]
-interaction = interaction [1:25,]
 p<-ggplot(data=interaction, aes(x=reorder(Mixing,value), y=value)) +
   geom_bar(stat="identity") 
 p <- p + geom_bar(stat="identity", fill="steelblue") +
   geom_text(aes(label=round(interaction$value,5)), hjust=1.6,color="white", size=3.5)
-p + coord_flip() + ggtitle("Anova of interaction and influent variables")
-
-# Remark : The important variables are the following : 
-#                                   value
-# Kine_Dolomite                    0.002696630
-# Kppt_Calcite                     0.002254608
-# Kine_Illite                      0.002154100
-# K2diss_Dolomite                  0.002005415
-# K2diss_Illite:Kine_Dolomite      0.001909999
-# K2diss_Illite                    0.001612849
-# Kine_Illite:Kine_Kaolinite       0.001427935
-# K2diss_Dolomite:Kine_Gibbsite    0.001376154
-# K2diss_Smectite:Kppt_Quartz      0.001266825
-# Kppt_Smectite:Kine_Illite        0.001150967
-# K2diss_Kaolinite:Kine_Microcline 0.001132863
+p + coord_flip()
 
 #### Correlation between variables
 data_full = data.frame(y= Y,X)
@@ -172,6 +138,7 @@ library(corrplot)
 cor <- cor(data_full)
 quartz() # Pour l'afficher dans une autre fenetre
 corrplot(cor, type="upper", order = "AOE", tl.col="black", tl.srt=55, tl.cex = 0.7)
+
 
 
 #### R shiny
