@@ -5,7 +5,7 @@
 
 ## Questions 
 # - Comment étudier la réponse global des deux sorties ? 
-# - Est-il utile de maximiser le plan d'experience avec les observations que l'on a ? 
+# - Est-il utile de maximiser le plan d'experience LHS avec les observations que l'on a ? 
 
 ### Import package used
 install.packages('DiceKriging')
