@@ -230,7 +230,23 @@ p + coord_flip() + ggtitle("Anova of interaction and influent variables")
 
 # We can see that the variable Kine Quartz is present in a lot of interaction 
 
-
+#### Shity code
+result =matrix(nrow = 4,ncol=30)
+k=1
+good = c("Kppt_Calcite","K2diss_Dolomite","Kppt_Kaolinite","K2diss_Anhydrite")
+ind = which(names(X)==good[4])
+summary(X[,ind])
+change = seq(-1.5,1.5,length.out = 30)
+for (i in change){
+  vector = data.frame(X[1,1:(ind-1)],K2diss_Anhydrite = change[k],X[1,(ind+1):dim(X)[2]])
+  result[4,k]=predict(model.RF,vector)
+  k=k+1
+}
+par(mfrow=c(2,2))
+for (i in 1:4) {
+  plot(result[i,])
+}
+par(mfrow=c(1,1))
 #### R shiny
 server=function(input, output) {
   
