@@ -6,6 +6,7 @@
 ## Questions 
 # - Comment étudier la réponse global des deux sorties ? 
 # - Est-il utile de maximiser le plan d'experience LHS avec les observations que l'on a ? 
+# - Variabilité du Morris 
 
 ### Import package used
 install.packages('DiceKriging')
