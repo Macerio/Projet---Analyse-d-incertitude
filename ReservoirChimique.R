@@ -14,6 +14,8 @@ library(DiceKriging) #for km
 library(sensitivity) #for morris
 library(ggplot2)
 library(randomForest)
+library(rpart)
+library(rpart.plot)
 
 ### Import data
 #chemin = '/Users/HUGO/Documents/Ecole/INSA/5GM/Incertitude/Projet'
@@ -47,8 +49,22 @@ data = data.frame(y= Y1,X)
 modeleRL <- lm(data$Y.X.wgt_calcite~.,data = data)
 summary(modeleRL)
 
-#### RandomForest
+#### Tree
+model.tree = rpart(data$Y.X.wgt_calcite~.,data = data,cp = 0.00001)
+printcp(model.tree)
+param=model.tree$cptable
+cp.optim=model.tree$cptable[which.min(model.tree$cptable[,"xerror"]),"CP"]
+arbre=prune(model.tree,cp=cp.optim)
+rpart.plot(arbre) # long execution (20 secondes)
 
+#### RandomForest
+model.RF = randomForest(data$Y.X.wgt_calcite~.,data = data)
+varImpPlot(model.RF)
+Imp = data.frame(name = rownames(model.RF$importance), IncNodePurity = model.RF$importance)
+VarImp <-ggplot(data=Imp, aes(x=reorder(name,IncNodePurity), y=IncNodePurity)) +
+  geom_bar(stat="identity") +
+  geom_bar(stat="identity", fill="steelblue")
+VarImp + coord_flip()
 
 ### Selection des bonnes variables
 model.empty <- lm(data$Y.X.wgt_calcite~1,data = data)
@@ -70,9 +86,13 @@ RL =function(X){
   X.scaled <- data.frame(t(apply(X,1,scale.unif)))
   return(predict(modeleRL,X.scaled))
 }
+RF =function(X){
+  X.scaled <- data.frame(t(apply(X,1,scale.unif)))
+  return(predict(model.RF,X.scaled))
+}
 
+model.morris = morris(RF,factors =colnames(X),design = list(type = "oat", levels = 10, grid.jump = 3), r = 10)
 
-model.morris = morris(RL,factors =colnames(X),design = list(type = "oat", levels = 15, grid.jump = 5), r = 15)
 #model.morris = morris(modeleRL,factors =colnames(X),design = list(type = "oat", levels = 5, grid.jump = 3), r = 4)
 #quartz()
 plot(model.morris)
