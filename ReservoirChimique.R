@@ -7,6 +7,7 @@ install.packages('DiceKriging')
 install.packages('sensitivity')
 library(DiceKriging) #for km
 library(sensitivity) #for morris
+library(ggplot2)
 
 ### Import data
 #chemin = '/Users/HUGO/Documents/Ecole/INSA/5GM/Incertitude/Projet'
