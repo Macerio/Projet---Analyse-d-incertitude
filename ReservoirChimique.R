@@ -73,10 +73,12 @@ annova = aov(data$Y.X.wgt_calcite~(.)^2,data=data)
 interaction = annova$coefficients[-1] # On enlève l'intercept
 interaction = interaction[which(interaction>10^-3)]
 barplot(sort(interaction, decreasing = T), las = 2)
-plot(annova)
+#plot(annova)
+interaction = data.frame(Mixing = names(interaction),value = interaction)
+interaction = interaction[order(interaction[,2], decreasing = T),]
+p<-ggplot(data=interaction, aes(x=reorder(Mixing,value), y=value)) +
+  geom_bar(stat="identity") 
+p <- p + geom_bar(stat="identity", fill="steelblue") +
+  geom_text(aes(label=round(interaction$value,5)), hjust=1.6,color="white", size=3.5)
+p + coord_flip()
 
-
-install.package("ggplot2")
-library("ggplot2")
-qplot(interaction, geom="bar", stat="identity")
-names(interaction)
