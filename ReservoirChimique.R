@@ -14,6 +14,8 @@ library(DiceKriging) #for km
 library(sensitivity) #for morris
 library(ggplot2)
 library(randomForest)
+library(rpart)
+library(rpart.plot)
 
 ### Import data
 #chemin = '/Users/HUGO/Documents/Ecole/INSA/5GM/Incertitude/Projet'
@@ -47,7 +49,23 @@ data = data.frame(y= Y1,X)
 modeleRL <- lm(data$Y.X.wgt_calcite~.,data = data)
 summary(modeleRL)
 
+#### Tree
+model.tree = rpart(data$Y.X.wgt_calcite~.,data = data,cp = 0.00001)
+printcp(model.tree)
+param=model.tree$cptable
+cp.optim=model.tree$cptable[which.min(model.tree$cptable[,"xerror"]),"CP"]
+arbre=prune(model.tree,cp=cp.optim)
+rpart.plot(arbre) # long execution (20 secondes)
+
 #### RandomForest
+model.RF = randomForest(data$Y.X.wgt_calcite~.,data = data)
+varImpPlot(model.RF)
+Imp = data.frame(name = rownames(model.RF$importance), IncNodePurity = model.RF$importance)
+VarImp <-ggplot(data=Imp, aes(x=reorder(name,IncNodePurity), y=IncNodePurity)) +
+  geom_bar(stat="identity") +
+  geom_bar(stat="identity", fill="steelblue")
+VarImp + coord_flip()
+
 
 
 ### Selection des bonnes variables
@@ -70,9 +88,12 @@ RL =function(X){
   X.scaled <- data.frame(t(apply(X,1,scale.unif)))
   return(predict(modeleRL,X.scaled))
 }
+RF =function(X){
+  X.scaled <- data.frame(t(apply(X,1,scale.unif)))
+  return(predict(model.RF,X.scaled))
+}
 
-
-model.morris = morris(RL,factors =colnames(X),design = list(type = "oat", levels = 10, grid.jump = 3), r = 4)
+model.morris = morris(RF,factors =colnames(X),design = list(type = "oat", levels = 10, grid.jump = 3), r = 4)
 #model.morris = morris(modeleRL,factors =colnames(X),design = list(type = "oat", levels = 5, grid.jump = 3), r = 4)
 #quartz()
 plot(model.morris)
@@ -91,15 +112,6 @@ p <- p + geom_bar(stat="identity", fill="steelblue") +
   geom_text(aes(label=round(interaction$value,5)), hjust=1.6,color="white", size=3.5)
 p + coord_flip()
 
-<<<<<<< Updated upstream
-=======
-
-install.package("ggplot2")
-library("ggplot2")
-qplot(interaction, geom="bar", stat="identity")
-names(interaction)
-
-
 ## Correlation between variables
 
 pairs(data[round(runif(100, min=1, max=10886), digits=0),-c(1,2,3,4,13)])
@@ -109,4 +121,3 @@ cor <- cor(data[,c(6,7,8,9,14,15,16,17,12)])
 # quartz() # Pour l'afficher dans une autre fenetre
 corrplot(cor, type="upper", order="hclust", tl.col="black", tl.srt=45)
 
->>>>>>> Stashed changes
