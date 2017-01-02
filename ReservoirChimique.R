@@ -13,6 +13,7 @@ install.packages('sensitivity')
 library(DiceKriging) #for km
 library(sensitivity) #for morris
 library(ggplot2)
+library(randomForest)
 
 ### Import data
 #chemin = '/Users/HUGO/Documents/Ecole/INSA/5GM/Incertitude/Projet'
@@ -46,6 +47,9 @@ data = data.frame(y= Y1,X)
 modeleRL <- lm(data$Y.X.wgt_calcite~.,data = data)
 summary(modeleRL)
 
+#### RandomForest
+
+
 ### Selection des bonnes variables
 model.empty <- lm(data$Y.X.wgt_calcite~1,data = data)
 model.both = step(model.empty,scope=list(lower= model.empty,upper= modeleRL) ,direction = "both")
@@ -73,11 +77,11 @@ model.morris = morris(RL,factors =colnames(X),design = list(type = "oat", levels
 #quartz()
 plot(model.morris)
 
+#### ANNOVA
 # Pour connaitre les effets d'interactions : 
 annova = aov(data$Y.X.wgt_calcite~(.)^2,data=data)
 interaction = annova$coefficients[-1] # On enlève l'intercept
 interaction = interaction[which(interaction>10^-3)]
-barplot(sort(interaction, decreasing = T), las = 2)
 #plot(annova)
 interaction = data.frame(Mixing = names(interaction),value = interaction)
 interaction = interaction[order(interaction[,2], decreasing = T),]
