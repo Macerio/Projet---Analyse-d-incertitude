@@ -2,6 +2,11 @@
 ## Projet ANALYSE D'INCERTITUDE ##
 ##################################
 
+
+## Questions 
+# - Comment étudier la réponse global des deux sorties ? 
+# - Est-il utile de maximiser le plan d'experience avec les observations que l'on a ? 
+
 ### Import package used
 install.packages('DiceKriging')
 install.packages('sensitivity')
@@ -82,3 +87,22 @@ p <- p + geom_bar(stat="identity", fill="steelblue") +
   geom_text(aes(label=round(interaction$value,5)), hjust=1.6,color="white", size=3.5)
 p + coord_flip()
 
+<<<<<<< Updated upstream
+=======
+
+install.package("ggplot2")
+library("ggplot2")
+qplot(interaction, geom="bar", stat="identity")
+names(interaction)
+
+
+## Correlation between variables
+
+pairs(data[round(runif(100, min=1, max=10886), digits=0),-c(1,2,3,4,13)])
+install.packages("corrplot")
+library(corrplot)
+cor <- cor(data[,c(6,7,8,9,14,15,16,17,12)])
+# quartz() # Pour l'afficher dans une autre fenetre
+corrplot(cor, type="upper", order="hclust", tl.col="black", tl.srt=45)
+
+>>>>>>> Stashed changes
