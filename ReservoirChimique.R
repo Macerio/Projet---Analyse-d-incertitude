@@ -11,10 +11,15 @@
 ### Import package used
 library(DiceKriging) #for km
 library(sensitivity) #for morris
-library(ggplot2)
-library(randomForest)
-library(rpart)
-library(rpart.plot)
+library(ggplot2) # plot 
+library(randomForest) # RandomForest model
+library(rpart) # Tree model
+library(rpart.plot) # plot tree
+library(corrplot) # plot correlation
+
+############
+## MORRIS ##
+############
 
 ### Import data
 chemin = '/Users/HUGO/Documents/Ecole/INSA/5GM/Incertitude/Projet'
@@ -42,16 +47,20 @@ boxplot(Y2)
 X = scale(X)
 X = data.frame(X)
 boxplot(X)
-data = data.frame(y= Y1,X)
 
 #### Correlation between variables
 data_full = data.frame(y= Y,X)
-install.packages("corrplot")
-library(corrplot)
 cor <- cor(data_full)
 quartz() # Pour l'afficher dans une autre fenetre
 corrplot(cor, type="upper", order = "AOE", tl.col="black", tl.srt=55, tl.cex = 0.7)
 
+
+
+####################
+## Calcite weight ##
+####################
+
+data = data.frame(y= Y1,X)
 
 ### Create models
 #### régression linéaire
@@ -101,25 +110,11 @@ RF =function(X){
 }
 
 model.morris = morris(RF,factors =colnames(X),design = list(type = "oat", levels = 10, grid.jump = 3), r = 20)
-
-#model.morris = morris(modeleRL,factors =colnames(X),design = list(type = "oat", levels = 5, grid.jump = 3), r = 4)
-#quartz()
-plot(model.morris)
-summary(model.morris)
-
-d=data.frame(x1=c(1,3,1,5,4), x2=c(2,4,3,6,6), y1=c(1,1,4,1,3), y2=c(2,2,5,3,5), t=c('a','a','a','b','b'), r=c(1,2,3,4,5))
-ggplot() + 
-  scale_x_continuous(name="x") + 
-  scale_y_continuous(name="y") +
-  geom_rect(data=d, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2, fill=t), color="black", alpha=0.5) +
-  geom_text(data=d, aes(x=x1+(x2-x1)/2, y=y1+(y2-y1)/2, label=r), size=4) 
-
 # Better plot
 mu <- apply(model.morris$ee, 2, mean)
 mu.star <- apply(model.morris$ee, 2, function(x) mean(abs(x)))
 sigma <- apply(model.morris$ee, 2, sd)
 
-#plot(mu.star, sigma)
 marice= data.frame(name = model.morris$factors,mu.star,sigma)
 d=data.frame(x1=c(0,0.003,0.002), x2=c(0.002,0.005,max(mu.star)+0.001), y1=c(0,0.001,0.008), y2=c(0.004,0.006,max(sigma)+0.001),
              t =c('Non influents','Effets linéaires','Effets non linéaires ou interactions') , 
@@ -165,13 +160,75 @@ p + coord_flip() + ggtitle("Anova of interaction and influent variables")
 # Kppt_Smectite:Kine_Illite        0.001150967
 # K2diss_Kaolinite:Kine_Microcline 0.001132863
 
-#### Correlation between variables
-data_full = data.frame(y= Y,X)
-install.packages("corrplot")
-library(corrplot)
-cor <- cor(data_full)
-quartz() # Pour l'afficher dans une autre fenetre
-corrplot(cor, type="upper", order = "AOE", tl.col="black", tl.srt=55, tl.cex = 0.7)
+
+#####################
+## Chlorite weight ##
+#####################
+
+data = data.frame(y= Y2,X)
+# We have to erase the both variables K2diss and Kine chlorite because there 
+#are too correlate and this create a bad model 
+data = data[,-which(names(data) %in% c("K2diss_Chlorite","Kine_Chlorite"))]
+
+
+#### Tree
+model.tree = rpart(data$Y.X.wgt_chlorite~.,data = data,cp = 0.00001)
+printcp(model.tree)
+param=model.tree$cptable
+cp.optim=model.tree$cptable[which.min(model.tree$cptable[,"xerror"]),"CP"]
+arbre=prune(model.tree,cp=cp.optim)
+#rpart.plot(arbre) # long execution (20 secondes)
+
+#### RandomForest
+model.RF = randomForest(data$Y.X.wgt_chlorite~.,data = data)
+Imp = data.frame(name = rownames(model.RF$importance), IncNodePurity = model.RF$importance)
+VarImp <-ggplot(data=Imp, aes(x=reorder(name,IncNodePurity), y=IncNodePurity)) +
+  geom_bar(stat="identity") +
+  geom_bar(stat="identity", fill="steelblue")
+VarImp + coord_flip()
+
+#### Morris
+
+model.morris = morris(RF,factors =colnames(X),design = list(type = "oat", levels = 10, grid.jump = 3), r = 20)
+mu <- apply(model.morris$ee, 2, mean)
+mu.star <- apply(model.morris$ee, 2, function(x) mean(abs(x)))
+sigma <- apply(model.morris$ee, 2, sd)
+
+marice= data.frame(name = model.morris$factors,mu.star,sigma)
+d=data.frame(x1=c(0,0.00075,0.00055), x2=c(0.0005,max(mu.star)+0.0001,max(mu.star)+0.0001), y1=c(0,0,0.001), y2=c(0.0005,0.0005,max(sigma)+0.0001),
+             t =c('Non influents','Effets linéaires','Effets non linéaires ou interactions') , 
+             r=c(1,2,3))
+
+g <- ggplot(marice) +
+  geom_rect(data=d, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2, fill=t), color="black", alpha=0.5) +
+  geom_point(aes(x=mu.star, y=sigma,label = model.morris$factors),size=1) +
+  geom_text(aes(x=mu.star, y=sigma,label = model.morris$factors),size=3,hjust=1.1)
+g
+
+# Variable with a non linear effect : 
+# - Kppt calcite
+# - K2diss dolomite 
+# - Kppt Kaolinite
+# - K2diss Microcline 
+# - Kine Quartz
+
+# We don't have other effects. 
+
+#### ANOVA
+# To identify the different interaction between variables and the important variable for the output Y1 : 
+annova = aov(data$Y.X.wgt_chlorite~(.)^2,data=data)
+interaction = annova$coefficients[-1] # On enlève l'intercept
+#plot(annova)
+interaction = data.frame(Mixing = names(interaction),value = interaction)
+interaction = interaction[order(interaction[,2], decreasing = T),]
+interaction = interaction [1:25,]
+p<-ggplot(data=interaction, aes(x=reorder(Mixing,value), y=value)) +
+  geom_bar(stat="identity") 
+p <- p + geom_bar(stat="identity", fill="steelblue") +
+  geom_text(aes(label=round(interaction$value,5)), hjust=1.6,color="white", size=3.5)
+p + coord_flip() + ggtitle("Anova of interaction and influent variables")
+
+# We can see that the variable Kine Quartz is present in a lot of interaction 
 
 
 #### R shiny
