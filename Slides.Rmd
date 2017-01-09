@@ -58,7 +58,7 @@ param=model.tree$cptable
 cp.optim=model.tree$cptable[which.min(model.tree$cptable[,"xerror"]),"CP"]
 arbre=prune(model.tree,cp=cp.optim)
 rpart.plot(arbre)
-````
+```
 
 
 ### Algorithme de Morris pour la concentration de calcite
@@ -117,4 +117,4 @@ p<-ggplot(data=interaction, aes(x=reorder(Mixing,value), y=value)) +
 p <- p + geom_bar(stat="identity", fill="steelblue") +
   geom_text(aes(label=round(interaction$value,5)), hjust=1.6,color="white", size=3.5)
 p + coord_flip() + ggtitle("Anova of interaction and influent variables")
-````
+```

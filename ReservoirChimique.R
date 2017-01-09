@@ -22,8 +22,8 @@ library(corrplot) # plot correlation
 ############
 
 ### Import data
-chemin = '/Users/HUGO/Documents/Ecole/INSA/5GM/Incertitude/Projet'
-#chemin = "~/Google Drive/INSA/Analyse d'incertitude/Projet"
+#chemin = '/Users/HUGO/Documents/Ecole/INSA/5GM/Incertitude/Projet'
+chemin = "~/Google Drive/INSA/Analyse d'incertitude/Projet"
 jdd.1 = read.csv(paste(chemin,'/jdd_1.csv',sep=""),header= T )
 
 ### Look up and clean the data 
@@ -260,5 +260,10 @@ ui=fluidPage(
 )
 
 shinyApp(ui,server)
-    
-    
+
+### JDD2
+
+jdd.2 = read.csv(paste(chemin,'/jdd_2.csv',sep=""),header= T )
+head(jdd.2)
+
+pairs(jdd.2[1:50,])
