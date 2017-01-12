@@ -1,36 +1,42 @@
----
-title: 'Analyse d'incertitude : Réactions chimiques liées au stockage du CO2'
-author: "Marie-Cécile RIOM & Hugo SECHIER"
-date: "9 janvier 2017"
-output:
-  ioslides_presentation
-runtime: shiny
-autosize: yes
----
+Analyse d'incertitude:Réactions chimiques liées au stockage du CO2
+========================================================
+author: Marie-Cécile RIOM & Hugo SECHIER
+date: 9 janvier 2017
 
 ```{r, echo = FALSE, warning=FALSE}
 library(DiceKriging) #for km
 library(sensitivity) #for morris
-library(ggplot2)
+library(ggplot2) # plot 
+library(rpart) # Tree model
+library(rpart.plot) # plot tree
+library(corrplot) # plot correlation
+library(randtoolbox) # for sobol 
+library(DiceDesign) # For mindist
+library(plotly) # plot
 suppressWarnings(suppressMessages(library(randomForest)))
 library(rpart)
 library(rpart.plot)
+library(plotly)
 chemin = "~/Google Drive/INSA/Analyse d'incertitude/Projet"
 jdd.1 = read.csv(paste(chemin,'/jdd_1.csv',sep=""),header= T )
 ```
 
-## Présentation du problème
+Présentation du problème
+========================================================
 
+• **But** : Analyser les interactions ... 
 
+• **Moyen** : Deux jeu de données ...
 
-### Compréhension des données
-
+Compréhension des données
+========================================================
 ```{r, echo = FALSE, warning=FALSE}
 summary(jdd.1)
 ```
 
-### Compréhension des données
-```{r, echo = FALSE, warning=FALSE, fig.height=4,fig.width=4}
+Compréhension des données
+========================================================
+```{r, echo = FALSE, warning=FALSE}
 X = jdd.1[,1:(length(jdd.1)-2)]
 for (i in 1:dim(X)[2]){
   X[,i]=as.numeric(X[,i])
@@ -48,8 +54,14 @@ cor <- cor(data_full)
 corrplot(cor, type="upper", order = "AOE", tl.col="black", tl.srt=55, tl.cex = 0.7)
 ```
 
-## Modélisation
+Modélisation
+========================================================
+right : 20%
 ### Création d'un modèle pour expliquer la concentration de calcite
+
+Visualisation d'un exemple d'arbre avec les variables les plus importantes
+
+
 ```{r, echo = FALSE, warning=FALSE}
 #### Tree
 model.tree = rpart(data$Y.X.wgt_calcite~.,data = data,cp = 0.01)
@@ -61,8 +73,8 @@ rpart.plot(arbre)
 ```
 
 
-### Algorithme de Morris pour la concentration de calcite
-
+Algorithme de Morris pour la concentration de calcite
+========================================================
 ```{r, echo = FALSE}
 #### RandomForest
 model.RF = randomForest(data$Y.X.wgt_calcite~.,data = data)
@@ -101,8 +113,8 @@ g
 
 ```
 
-### Annova pour la concentration en calcite
-
+Annova pour la concentration en calcite
+========================================================
 ```{r, echo = FALSE}
 #### ANNOVA
 # To identify the different interaction between variables and the important variable for the output Y1 : 
